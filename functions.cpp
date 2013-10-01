@@ -1,4 +1,4 @@
-//////////////////////////////////
+ //////////////////////////////////
 ///////////////////////////////////
 /////                         /////
 /////     Functions File      /////
@@ -10,6 +10,7 @@
 #include "WPILib.h"
 #include "math.h"
 #include "config.h"
+#include "functions.h"
 
 #ifdef DEBUG
 // Set up the DS
@@ -39,8 +40,8 @@ void smooth(float tX, float tY, float tZ, RobotDrive *rDrive, float smotFact){
 
 #ifdef DEBUG
 	// Print out current and desired output to the DS 
-	dsLCD->Printf(DriverStationLCD::kUser_Line1, 1, "%.3f:%.3f:%.3f", tX, tY, tZ);	// Desired
-	dsLCD->Printf(DriverStationLCD::kUser_Line2, 1, "%.3f:%.3f:%.3f", cX, cY, cZ);	// Current
+//	dsLCD->Printf(DriverStationLCD::kUser_Line1, 1, "%.3f:%.3f:%.3f", tX, tY, tZ);	// Desired
+//	dsLCD->Printf(DriverStationLCD::kUser_Line2, 1, "%.3f:%.3f:%.3f", cX, cY, cZ);	// Current
 	dsLCD->UpdateLCD();
 #endif
 
@@ -52,91 +53,6 @@ void smooth(float tX, float tY, float tZ, RobotDrive *rDrive, float smotFact){
 // Runs through the whole shabang before returning
 // Right out, Left out, Both in
 void climb(Joystick* mJoy, Solenoid* slo, Solenoid* sli, Solenoid* sro, Solenoid* sri, Solenoid* sti, Solenoid* sto){
-	int i, step;
-	step = 1;
-	bool kill = false;
-
-	Wait(.25);
-
-	for (i=1;i<5;i++){
-
-		sri->Set(false);
-		sli->Set(false);
-		sro->Set(true);
-		slo->Set(true);
-
-		while(1){
-#ifdef DEBUG
-			dsLCD->Printf(DriverStationLCD::kUser_Line3, 1, "%d / 9", step);
-			dsLCD->UpdateLCD();
-#endif
-			if(mJoy->GetRawButton(7)){
-				kill = true;
-				break;
-			}
-			if(mJoy->GetRawButton(5)){
-				break;
-			}
-		}
-		if (kill) break;
-
-		if(step == 1){
-			Wait(1.0);
-			step++;
-			
-			sto->Set(false);
-			sti->Set(true);
-			
-			while (1){
-#ifdef DEBUG
-				dsLCD->Printf(DriverStationLCD::kUser_Line3, 1, "%d / 9", step);
-				dsLCD->UpdateLCD();
-#endif
-				if(mJoy->GetRawButton(7)){
-					kill = true;
-					break;
-				}
-				if(mJoy->GetRawButton(5)){
-					break;
-				}
-			}
-		}
-
-		sro->Set(false);
-		slo->Set(false);
-		sri->Set(true);
-		sli->Set(true);
-
-		Wait(1.0);
-		step++;
-
-		while(1){
-#ifdef DEBUG
-			dsLCD->Printf(DriverStationLCD::kUser_Line3, 1, "%d / 9", step);
-			dsLCD->UpdateLCD();
-#endif
-			if (mJoy->GetRawButton(7)){
-				kill = true;
-				break;
-			}
-			if (mJoy->GetRawButton(5)){
-				break;
-			}
-		}
-		if (kill) break;
-
-		Wait(1.0);
-		step++;
-	}
-#ifdef DEBUG
-	dsLCD->Printf(DriverStationLCD::kUser_Line3, 1, "DONE       "); 
-	dsLCD->UpdateLCD();
-#endif
-
-	sro->Set(false);
-	slo->Set(false);
-	sri->Set(true);
-	sli->Set(true);
 }
 
 // Prints a float to line 5.
@@ -153,4 +69,29 @@ void dsPrintCount(int val){
 #ifdef DEBUG
 	dsLCD->Printf(DriverStationLCD::kUser_Line4, 1, "Count: %d ", val);
 #endif
+}
+
+// Prints the state of the climber
+// Ternary operators FTW!
+void dsDisplayState(bool tf){
+#ifdef DEBUG
+	dsLCD->Printf(DriverStationLCD::kUser_Line6, 1, (tf)?"Deployed ":"Retracted");
+#endif
+}
+
+// Piston class
+// Designed to make things simpler
+// Constructor
+Piston::Piston(int o, int i){
+	out = new Solenoid(o);
+	in = new Solenoid(i);
+}
+
+// Destructor
+Piston::~Piston(){}
+
+bool Piston::Set(bool io){
+	out->Set(io);
+	in->Set(!io);
+	return !io;
 }

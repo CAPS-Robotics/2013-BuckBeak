@@ -1,4 +1,4 @@
-/////////////////////////////////
+ /////////////////////////////////
 //////////////////////////////////
 /////                        /////
 /////     Main Code File     /////
@@ -13,8 +13,6 @@
 
 // Strafe Mixing value (compensates for offset back wheels)
 float tempRat = -0.13;
-// Debounce for the shooter mechanism
-bool spinning = false;
 // Counter for number of times shot
 int shotcount = 0;
 
@@ -29,9 +27,6 @@ class RobotDemo : public SimpleRobot
 #ifdef PNEUMATICS
 	// Climbing Solenoids
 	Solenoid plf, plb, prf, prb, pti, pto;
-	// Compressor relay and pressure limit switch
-	Relay compressor;
-	DigitalInput clim;
 #endif
 #ifdef SHOOTER
 	// Motor Talons
@@ -40,6 +35,13 @@ class RobotDemo : public SimpleRobot
 	Solenoid fo, fi;
 	// Index limit switch
 	DigitalInput sls;
+#endif
+#ifdef COMPRESSOR
+	// Compressor class
+	Compressor comp;
+#endif
+#ifdef TESTING
+	// Stuff goes here
 #endif
 public:
 	RobotDemo(void):
@@ -55,28 +57,33 @@ public:
 	prf(3),		// Right Forwards
 	prb(4),		// Right Backwards
 	pti(5),		// Tilt Retracted
-	pto(6),		// Tilt Extended
-	compressor(1, Relay::kForwardOnly),		// Compressor relay
-	clim(14)	// Pressure limit switch
+	pto(6)		// Tilt Extended
 #endif
 #ifdef SHOOTER
 	,sm(6),		// Shooter Fire Talon
 	si(7),		// Shooter Indexing Talon
 	fo(8),		// Shooter Fire out
 	fi(7),		// Shooter Fire in
-	sls(10)
+	sls(10)		// Limit switch
 #endif
-
+#ifdef COMPRESSOR
+	,comp(13, 3)	// Compressor
+#endif
+#ifdef TESTING
+	// Init stuff here
+#endif
 	{
 #ifdef DRIVE
 		// Disable all the Watchdogs
 		mDrive.SetSafetyEnabled(false);
 #endif
 #ifdef SHOOTER
+		// Initial Solenoid Values
 		fo.Set(false);
 		fi.Set(true);
 #endif
 #ifdef PNEUMATICS
+		// Initial Solenoid Values
 		pti.Set(true);
 		pto.Set(false);
 
@@ -85,55 +92,88 @@ public:
 		prf.Set(false);
 		prb.Set(true);
 #endif
+#ifdef TESTING
+		// Init functions go here
+#endif
 	}
 	void Autonomous(void)
 	{
+#ifndef SUPERDEBUG
+#ifdef AUTOMODE
 #ifdef DRIVE
 		// Drive Forwards a ways
-		mDrive.MecanumDrive_Cartesian(0,.32,0,0);
-		Wait(2.0);
+		mDrive.MecanumDrive_Cartesian(0,.5,.15,0);
+		Wait(1.45);
 		mDrive.MecanumDrive_Cartesian(0.0,0.0,0.0,0.0);
 #endif
 #ifdef SHOOTER
+		
+//		float shottime;
+	
 		// Spin up, fire, then drop motors
-		sm.Set(.5);
-		Wait(.32);
+
+		sm.Set(-1.0);
+
+		Wait(1.25);
+
 		fi.Set(false);
 		fo.Set(true);
-		Wait(.32);
-		fi.Set(true);
+		Wait(.5);
 		fo.Set(false);
+		fi.Set(true);
+		shotcount += 1;
+		dsPrintCount(shotcount);
+
+		Wait(.75);
+
+		si.Set(-.7);
+		// WARNING:
+		// The while can lock up the robot for a whole match
+//		shottime = GetTime();
+//		while (!sls.Get() && (GetTime() - shottime) >= 1.0);
+		Wait(.75);
+		Wait(.05);
+		si.Set(0.0);
+
+		Wait(1.25);
+
+		fi.Set(false);
+		fo.Set(true);
+		Wait(.5);
+		fo.Set(false);
+		fi.Set(true);
+		shotcount += 1;
+		dsPrintCount(shotcount);
+/*
+		si.Set(-.7);
+		// WARNING:
+		// The while can lock up the robot for a whole match
+		shottime = GetTime();
+		while (!sls.Get() && (GetTime() - shottime) >= 1.0);
+		Wait(.05);
+		si.Set(0.0);
+
+		Wait(1.25);
+
+		fi.Set(false);
+		fo.Set(true);
+		Wait(.5);
+		fo.Set(false);
+		fi.Set(true);
+		shotcount += 1;
+		dsPrintCount(shotcount);
+*/
 		sm.Set(0.0);
-#endif
-#ifdef DRIVE
-		// Little delay
-		Wait(.25);
+#endif // SHOOTER
 
-		// Get ready to drive
-		float tempX = .6;
-		float tempY = 0.0;
-		float tempZ = 0.0;
-
-		// Strafe away
-		mDrive.MecanumDrive_Cartesian(tempX, 0.0, tempZ+(tempX*tempRat));
-
-		// Turn around
-		Wait(1.9);
-		tempZ = .4;
-		mDrive.MecanumDrive_Cartesian(0.0, 0.0, tempZ);
-
-		// Drive to midline
-		Wait(1.0);
-		tempY = .7;
-		mDrive.MecanumDrive_Cartesian(0.0, tempY, 0.0);
-
-		// Stop moving
-		Wait(2.1);
-		mDrive.MecanumDrive_Cartesian(0.0, 0.0, 0.0);
-#endif // DRIVE
+#endif // AUTOMODE
+#endif // SUPERDEBUG CONTROL
 	}
 	void OperatorControl(void)
 	{
+#ifdef COMPRESSOR
+		comp.Start();
+#endif
 		while (IsOperatorControl())
 		{
 #ifndef SUPERDEBUG
@@ -147,44 +187,48 @@ public:
 #ifdef DEBUG
 			// Increment or decrement the strafe mixing value
 			if (stick.GetRawButton(4)){
-				tempRat += .01; Wait(.2);} // Debounce
+				tempRat += .01; Wait(.2); // Debounce
+				// Let the driver know the current mix
+				dsPrintFloat(tempRat);}
 			if (stick.GetRawButton(2)){
-				tempRat -= .01; Wait(.2);} // Debounce
-
-			// Let the driver know the current mix
-			dsPrintFloat(tempRat);
+				tempRat -= .01; Wait(.2); // Debounce
+				// Let the driver know the current mix
+				dsPrintFloat(tempRat);}
 #endif // DEBUG
+			// Actually drive the robot
 			smooth(tempX, tempY, tempZ+(tempX*tempRat), &mDrive, 1.5);
 #endif // DRIVE
 
-#ifdef PNEUMATICS // MINUS CLIMBING FOR NOW
-			/*
-			if(stick.GetRawButton(7) && pto.Get()){ // Left trigger climbs
-				climb(&stick, &plf, &plb, &prf, &prb, &pti, &pto);
+#ifdef PNEUMATICS
+			if(stick.GetRawButton(7)){ // Left trigger extends
+				prf.Set(true);
+				plf.Set(true);
+				prb.Set(false);
+				plb.Set(false);
+
+				if(pti.Get()){
+					pti.Set(false);
+					pto.Set(true);
+					Wait(.2);
+				}
+			} else { // Only while held
+				prb.Set(true);
+				plb.Set(true);
+				prf.Set(false);
+				plf.Set(false);
 			}
 
 			// Left Bumper deploys the climber
 			if(stick.GetRawButton(5)){
 				pti.Set(!pti.Get());
 				pto.Set(!pto.Get());
-			}
-			 */
-			// If the pressure hasnt been reached, run the compressor
-			if(!clim.Get()){
-				compressor.Set(Relay::kOn);
-			} else {
-				compressor.Set(Relay::kOff);
-			}
-			
-			if(stick.GetRawButton(6)){
-				compressor.Set(Relay::kOn);
-			} else {
-				compressor.Set(Relay::kOff);
+				dsDisplayState(pto.Get());
+				Wait(.2);
 			}
 #endif // PNEUMATICS
 
 #ifdef SHOOTER
-			if(stick.GetRawButton(7)){
+			if(stick.GetRawButton(8)){ // Right trigger fires
 				sm.Set(-1.0);
 
 				Wait(1.25);
@@ -202,54 +246,58 @@ public:
 				sm.Set(0.0);
 			}
 
-			if(stick.GetRawButton(5)){
+			if(stick.GetRawButton(6)){ // Right bumper loads a disc
+				Wait(.2);
 				si.Set(-.7);
+				// WARNING:
+				// The while can lock up the robot for a whole match
 				while (!sls.Get());
 				Wait(.05);
 				si.Set(0.0);
-			}
-
-			if(stick.GetRawButton(8)){
-				spinning = true;
-				sm.Set(-1.0);
-			} else {
-				if (spinning){
-					si.Set(-.9);
-					while (!sls.Get());
-					si.Set(0.0);
-
-					Wait(1.25);
-
-					fi.Set(false);
-					fo.Set(true);
-					Wait(.5);
-					fo.Set(false);
-					fi.Set(true);
-					shotcount += 1;
-					dsPrintCount(shotcount);
-
-					Wait(.75);
-
-					sm.Set(0.0);
-					spinning = false;
-				}
 			}
 #endif // SHOOTER
 
 #else // SUPERDEBUG
 			if(stick.GetRawButton(1)){
 				mDrive.MecanumDrive_Cartesian(0.0,.5,0.0);
+#ifdef SHOOTER
+				sm.Set(0.5);
+				si.Set(0.5);
+#endif
 			} else if(stick.GetRawButton(2)){
 				mDrive.MecanumDrive_Cartesian(0.0,-1.0,0.0);
+#ifdef SHOOTER
+				sm.Set(-1.0);
+				si.Set(-1.0);
+#endif
 			} else if(stick.GetRawButton(3)){
 				mDrive.MecanumDrive_Cartesian(0.0,-.5,0.0);
+#ifdef SHOOTER
+				sm.Set(-0.5);
+				si.Set(-0.5);
+#endif
 			} else if(stick.GetRawButton(4)){
 				mDrive.MecanumDrive_Cartesian(0.0,1.0,0.0);
+#ifdef SHOOTER
+				sm.Set(1.0);
+				si.Set(1.0);
+#endif
 			} else {
 				mDrive.MecanumDrive_Cartesian(0.0,0.0,0.0);
+#ifdef SHOOTER
+				sm.Set(0.0);
+				si.Set(0.0);
+#endif
 			}
 #endif // SUPERDEBUG
+
+#ifdef TESTING
+			// Teleop goes here
+#endif
 		}
+#ifdef COMPRESSOR
+		comp.Stop();
+#endif
 	}
 };
 

@@ -15,12 +15,17 @@
 // DRIVE: Enable driving
 // PNEUMATICS: Enable pneumatics module
 // SHOOTER: Enable shooter systems
+// AUTOMODE: Enable autonomous program
+// COMPRESSOR: Enable compressor, included by SHOOTER and PNEUMATICS
+// TESTING: Enable testing module
 
 // PUT 'EM RIGHT HERE
 #define DEBUG
 #define DRIVE
 #define PNEUMATICS
 #define SHOOTER
+#define COMPRESSOR
+#define AUTOMODE
 
 // Motor Ports:
 // 1: Front Left Drive Motor
@@ -31,7 +36,7 @@
 // 7: Shooter Indexing Talon
 
 // Relay Ports:
-// 1: Compressor Spike
+// 3: Compressor Spike
 
 // Solenoid Ports:
 // 1: Left Climbing Forward
@@ -44,30 +49,65 @@
 // 7: Shooter Retract
 
 // Digital Ports:
-// 14: Digital Pressure Gauge
+// 13: Digital Pressure Gauge
 
 // Controls:
 // (1,2)Left stick: Move and Strafe
 // (3)Right stick: rotation
 // (1)X: Index for shooter
 // (2)A: Strafe mix down
-// (3)B: Shooter half power
 // (4)Y: Strafe mix up
-// (5)LB: Deploy the climber
-//     While climbing: Advance to next step
-// (7)LT: Climb!
-//     While climbing: Kill climb sequence
-// (6)RB: Shooter motors while held
-// (8)RT: Fire the shooter
+// (5)LB: Deploy Climber
+// (7)LT: Direct set value to climber
+// (6)RB: Manual Load Shooter
+// (8)RT: Manual Fire Shooter
+
+#ifdef PNEUMATICS
+#ifndef COMPRESSOR
+#define COMPRESSOR
+#endif
+#endif
+
+#ifdef SHOOTER
+#ifndef COMPRESSOR
+#define COMPRESSOR
+#endif
+#endif
 
 // NO TOUCHY TOUCHY
 #ifdef SUPERDEBUG
-#ifdef DEBUG
-#undef DEBUG
+#ifndef DEBUG
+#define DEBUG
 #endif
 
 #ifndef DRIVE
 #define DRIVE
+#endif
+
+#ifndef SHOOTER
+#define SHOOTER
+#endif
+
+#ifdef PNEUMATICS
+#undef PNEUMATICS
+#endif
+
+#ifdef COMPRESSOR
+#undef COMPRESSOR
+#endif
+#endif // SUPERDEBUG
+
+#ifdef TESTING
+#ifdef SUPERDEBUG
+#undef SUPERDEBUG
+#endif
+
+#ifdef DEBUG
+#undef DEBUG
+#endif
+
+#ifdef DRIVE
+#undef DRIVE
 #endif
 
 #ifdef SHOOTER
@@ -77,6 +117,10 @@
 #ifdef PNEUMATICS
 #undef PNEUMATICS
 #endif
-#endif // SUPERDEBUG
+
+#ifdef COMPRESSOR
+#undef COMPRESSOR
+#endif
+#endif // TESTING
 
 #endif // CONFIG_H
