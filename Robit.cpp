@@ -47,12 +47,12 @@ void myRobit::RobotInit(){
 
 	// Set all starting values for objects
 	compressor->Start();
-	shooter_piston->Set( kReverse );
+	shooter_piston->Set( shooter_piston->kReverse );
 
 	// Set up thread argument structs
-	struct drive_arg driveArgStruct = { .drivetrain = drivetrain, .joystick = joystick };
-	struct input_arg inputArgStruct = { .joystick = joystick };
-	struct shooter_arg shooterArgStruct = { .shooter_piston = shooter_piston, .shooter_motor = shooter_motor };
+	struct drive_arg driveArgStruct = { drivetrain, joystick };
+	struct input_arg inputArgStruct = { joystick };
+	struct shooter_arg shooterArgStruct = { shooter_piston, shooter_motor };
 
 	// Start all the threads
 	pthread_create( &driveThread, NULL, driveFunc, (void *) &driveArgStruct );
@@ -65,15 +65,18 @@ AutonomousInit
  - Runs once at start of autonomous period
 *************************************************************************************/
 void myRobit::AutonomousInit(){
+	int						i;				/* Counter variable						*/
 	// Fire four times
-	sem_post_multiple( &shooter_semaphore, 4 );
+	for( i = 0; i < 4; ++i ){
+		sem_post( &shooter_semaphore );
+	}
 }
 
 /*************************************************************************************
 DriveFunc
  - Drives the robot asynchronously
 *************************************************************************************/
-void * myRobit::driveFunc( void * arg ){
+void * driveFunc( void * arg ){
 	struct drive_arg * driveArg = (struct drive_arg *) arg;
 											/* Cast argument						*/
 
@@ -90,10 +93,10 @@ void * myRobit::driveFunc( void * arg ){
 InputFunc
  - If the shoot button is pushed, post to the shooters semaphore
 *************************************************************************************/
-void * myRobit::inputFunc( void * arg ){
+void * inputFunc( void * arg ){
 	struct input_arg * inputArg = (struct input_arg *) arg;
 											/* Cast argument						*/
-	struct timespec waitstruct = { .tv_spec = 0, .tv_nsec = 200000000 };
+	struct timespec waitstruct = { 0, 200000000 };
 											/* Set up wait structure				*/
 
 	while ( 1 ){
@@ -109,10 +112,10 @@ void * myRobit::inputFunc( void * arg ){
 shooterFunc
  - Waits on the semaphore, then fires
 *************************************************************************************/
-void * myRobit::shooterFunc( void * arg ){
+void * shooterFunc( void * arg ){
 	struct shooter_arg * shooterArg = (struct shooter_arg *) arg;
 											/* Cast argument						*/
-	struct timespec waitstruct = { .tv_spec = 0, .tv_nsec = 500000000 };
+	struct timespec waitstruct = { 0, 500000000 };
 											/* Set up wait structure				*/
 	int val;								/* Used for checking semaphore value	*/
 	
@@ -125,9 +128,9 @@ void * myRobit::shooterFunc( void * arg ){
 		sleep( 1 );
 
 		// Pulse the firing piston
-		shooterArg->shooter_piston->Set( kForward );
+		shooterArg->shooter_piston->Set( shooterArg->shooter_piston->kForward );
 		nanosleep( &waitstruct, NULL );
-		shooterArg->shooter_piston->Set( kReverse );
+		shooterArg->shooter_piston->Set( shooterArg->shooter_piston->kReverse );
 
 		// Only stop the motor if we arent firing again
 		sem_getvalue( &shooter_semaphore, &val );
