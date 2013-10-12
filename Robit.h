@@ -46,14 +46,10 @@ public:
 
 	void AutonomousInit();
 
-	void * driveFunc( void * );
-	void * inputFunc( void * );
-	void * shooterFunc( void * );
-
 private:
 	pthread_t			driveThread;
 	pthread_t			inputThread;
-	pthread_t			shootThread;
+	pthread_t			shooterThread;
 
 	Compressor *		compressor;			/* Compressor for pneumatics			*/
 	RobotDrive *		drivetrain;			/* Drivetrain - Mecanum					*/
@@ -61,6 +57,13 @@ private:
 	Talon *				shooter_motor;		/* CIM for shooting						*/
 	DoubleSolenoid *	shooter_piston;		/* Piston for firing discs				*/
 };
+
+/*************************************************************************************
+Actuator thread functions
+*************************************************************************************/
+void * driveFunc( void * );
+void * inputFunc( void * );
+void * shooterFunc( void * );
 
 /*************************************************************************************
 Drive thread argument
