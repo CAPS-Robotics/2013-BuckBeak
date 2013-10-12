@@ -15,47 +15,47 @@ Includes
 /*************************************************************************************
 Defines
 *************************************************************************************/
-#define FRONT_RIGHT_MOTOR	1
-#define FRONT_LEFT_MOTOR	2
-#define BACK_RIGHT_MOTOR	3
-#define BACK_LEFT_MOTOR		4
+#define FRONT_RIGHT_MOTOR   1
+#define FRONT_LEFT_MOTOR    2
+#define BACK_RIGHT_MOTOR    3
+#define BACK_LEFT_MOTOR     4
 
-#define COMPRESSOR_PORT		6
-#define JOYSTICK_PORT		1
-#define PRESSURE_SWITCH		1
-#define SHOOTER_PISTON_FORE	1
-#define SHOOTER_PISTON_BACK	2
-#define TALON_PORT			5
+#define COMPRESSOR_PORT     6
+#define JOYSTICK_PORT       1
+#define PRESSURE_SWITCH     1
+#define SHOOTER_PISTON_FORE 1
+#define SHOOTER_PISTON_BACK 2
+#define TALON_PORT          5
 
-#define AXIS_LEFT_X			1
-#define AXIS_LEFT_Y			2
-#define AXIS_RIGHT_X		3
-#define AXIS_RIGHT_Y		4
+#define AXIS_LEFT_X         1
+#define AXIS_LEFT_Y         2
+#define AXIS_RIGHT_X        3
+#define AXIS_RIGHT_Y        4
 
-#define BTN_A				1
+#define BTN_A               1
 
 /*************************************************************************************
 Main robot class declaration
 *************************************************************************************/
 class myRobit : public IterativeRobot {
 public:
-	myRobit();
-	~myRobit();
+    myRobit();
+    ~myRobit();
 
-	void RobotInit();
+    void RobotInit();
 
-	void AutonomousInit();
+    void AutonomousInit();
 
 private:
-	pthread_t			driveThread;
-	pthread_t			inputThread;
-	pthread_t			shooterThread;
+    pthread_t               driveThread;
+    pthread_t               inputThread;
+    pthread_t               shooterThread;
 
-	Compressor *		compressor;			/* Compressor for pneumatics			*/
-	RobotDrive *		drivetrain;			/* Drivetrain - Mecanum					*/
-	Joystick *			joystick;			/* Joystick for input					*/
-	Talon *				shooter_motor;		/* CIM for shooting						*/
-	DoubleSolenoid *	shooter_piston;		/* Piston for firing discs				*/
+    Compressor *            compressor;     /* Compressor for pneumatics            */
+    RobotDrive *            drivetrain;     /* Drivetrain - Mecanum                 */
+    Joystick *              joystick;       /* Joystick for input                   */
+    Talon *                 shooter_motor;  /* CIM for shooting                     */
+    DoubleSolenoid *        shooter_piston; /* Piston for firing discs              */
 };
 
 /*************************************************************************************
@@ -69,21 +69,21 @@ void * shooterFunc( void * );
 Drive thread argument
 *************************************************************************************/
 struct drive_arg {
-	RobotDrive *		drivetrain;
-	Joystick *			joystick;
+    RobotDrive *            drivetrain;
+    Joystick *              joystick;
 };
 
 /*************************************************************************************
 Input thread argument
 *************************************************************************************/
 struct input_arg {
-	Joystick *			joystick;
+    Joystick *              joystick;
 };
 
 /*************************************************************************************
 Shooter thread argument
 *************************************************************************************/
 struct shooter_arg {
-	DoubleSolenoid *	shooter_piston;
-	Talon *				shooter_motor;
+    DoubleSolenoid *        shooter_piston;
+    Talon *                 shooter_motor;
 };
