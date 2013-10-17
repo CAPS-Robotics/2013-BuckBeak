@@ -10,17 +10,16 @@ Includes
 #include "WPILib.h"
 
 #include "pthread.h"
-#include "semaphore.h"
 
 /*************************************************************************************
 Defines
 *************************************************************************************/
-#define FRONT_RIGHT_MOTOR   1
-#define FRONT_LEFT_MOTOR    2
-#define BACK_RIGHT_MOTOR    3
-#define BACK_LEFT_MOTOR     4
+#define FRONT_RIGHT_MOTOR   2
+#define FRONT_LEFT_MOTOR    1
+#define BACK_RIGHT_MOTOR    4
+#define BACK_LEFT_MOTOR     3
 
-#define COMPRESSOR_PORT     6
+#define COMPRESSOR_PORT     1
 #define JOYSTICK_PORT       1
 #define PRESSURE_SWITCH     1
 #define SHOOTER_PISTON_FORE 1
@@ -45,17 +44,15 @@ public:
     void RobotInit();
 
     void AutonomousInit();
+    
+    void DisabledInit();
+    void TeleopInit();
+    void TestInit();
 
-private:
-    pthread_t               driveThread;
-    pthread_t               inputThread;
-    pthread_t               shooterThread;
-
-    Compressor *            compressor;     /* Compressor for pneumatics            */
-    RobotDrive *            drivetrain;     /* Drivetrain - Mecanum                 */
-    Joystick *              joystick;       /* Joystick for input                   */
-    Talon *                 shooter_motor;  /* CIM for shooting                     */
-    DoubleSolenoid *        shooter_piston; /* Piston for firing discs              */
+    void DisabledPeriodic();
+    void AutonomousPeriodic();
+    void TeleopPeriodic();
+    void TestPeriodic();
 };
 
 /*************************************************************************************
@@ -64,26 +61,3 @@ Actuator thread functions
 void * driveFunc( void * );
 void * inputFunc( void * );
 void * shooterFunc( void * );
-
-/*************************************************************************************
-Drive thread argument
-*************************************************************************************/
-struct drive_arg {
-    RobotDrive *            drivetrain;
-    Joystick *              joystick;
-};
-
-/*************************************************************************************
-Input thread argument
-*************************************************************************************/
-struct input_arg {
-    Joystick *              joystick;
-};
-
-/*************************************************************************************
-Shooter thread argument
-*************************************************************************************/
-struct shooter_arg {
-    DoubleSolenoid *        shooter_piston;
-    Talon *                 shooter_motor;
-};
