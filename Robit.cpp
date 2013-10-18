@@ -1,11 +1,10 @@
-/*************************************************************************************
-* Robit.cpp
-*
-* Defines the main robot class, as well as the thread functions
+/*********************************************************************************//**
+* @file Robit.cpp
+* Source file for the myRobit class and its thread functions
 *************************************************************************************/
 
 /*************************************************************************************
-Includes
+* Includes
 *************************************************************************************/
 #include "Robit.h"
 
@@ -16,22 +15,24 @@ Includes
 #include "WPILib.h"
 
 /*************************************************************************************
-Global variables
+* Global variables
 *************************************************************************************/
 sem_t *                     shooter_semaphore;
-                                            /* Shot synchro semaphore               */
-pthread_t                   driveThread;
-pthread_t                   inputThread;
-pthread_t                   shooterThread;
+                                            /**< Shot synchro semaphore             */
+pthread_t                   driveThread;    /**< Drive thread object                */
+pthread_t                   inputThread;    /**< Input thread object                */
+pthread_t                   shooterThread;  /**< Shooter thread object              */
 
-Compressor *                compressor;     /* Compressor for pneumatics            */
-RobotDrive *                drivetrain;     /* Drivetrain - Mecanum                 */
-Joystick *                  joystick;       /* Joystick for input                   */
-Talon *                     shooter_motor;  /* CIM for shooting                     */
-DoubleSolenoid *            shooter_piston; /* Piston for firing discs              */
+Compressor *                compressor;     /**< Compressor for pneumatics          */
+RobotDrive *                drivetrain;     /**< Drivetrain - Mecanum               */
+Joystick *                  joystick;       /**< Joystick for input                 */
+Talon *                     shooter_motor;  /**< CIM for shooting                   */
+DoubleSolenoid *            shooter_piston; /**< Piston for firing discs            */
 
-/*************************************************************************************
-Robot class constructor
+/*********************************************************************************//**
+* myRobit class constructor
+*
+* Sets up the shooter's semaphore
 *************************************************************************************/
 myRobit::myRobit(){
     // Set up the shooter's semaphore
@@ -39,25 +40,15 @@ myRobit::myRobit(){
 }
 
 /*************************************************************************************
-Robot class destructor
+* myRobit class destructor
 *************************************************************************************/
 myRobit::~myRobit(){}
 
-/*************************************************************************************
-Unused class functions
-*************************************************************************************/
-void myRobit::DisabledInit(){};
-void myRobit::TeleopInit(){};
-void myRobit::TestInit(){};
-
-void myRobit::DisabledPeriodic(){};
-void myRobit::AutonomousPeriodic(){};
-void myRobit::TeleopPeriodic(){};
-void myRobit::TestPeriodic(){};
-
-/*************************************************************************************
-RobotInit
- - Runs after all OS setup
+/*********************************************************************************//**
+* Robot init function
+*
+* Runs after all OS setup. Sets up global variables for all the mechanisms, then
+* spawns all the worker threads.
 *************************************************************************************/
 void myRobit::RobotInit(){
     // Set up the control objects
@@ -70,16 +61,17 @@ void myRobit::RobotInit(){
     // Set all starting values for objects
     compressor->Start();
     shooter_piston->Set( shooter_piston->kReverse );
-    
+
     // Start all the threads
     pthread_create( &driveThread, NULL, driveFunc, NULL );
     pthread_create( &inputThread, NULL, inputFunc, NULL );
     pthread_create( &shooterThread, NULL, shooterFunc, NULL );
 }
 
-/*************************************************************************************
-AutonomousInit
- - Runs once at start of autonomous period
+/*********************************************************************************//**
+* Autonomous init function
+*
+* Runs once at start of autonomous period. Will simply shoot four times.
 *************************************************************************************/
 void myRobit::AutonomousInit(){
     int                     i;              /* Counter variable                     */
@@ -90,9 +82,10 @@ void myRobit::AutonomousInit(){
     }
 }
 
-/*************************************************************************************
-DriveFunc
- - Drives the robot asynchronously
+/*********************************************************************************//**
+* Drive thread function
+*
+* Drives the robot concurrently with other actuators
 *************************************************************************************/
 void * driveFunc( void * arg ){
 
@@ -100,29 +93,31 @@ void * driveFunc( void * arg ){
         // Do dat drive thang
         drivetrain->MecanumDrive_Cartesian(
             joystick->GetX( ),
-            joystick->GetY( ), 
+            joystick->GetY( ),
             joystick->GetZ( ) );
     }
 }
 
-/*************************************************************************************
-InputFunc
- - If the shoot button is pushed, post to the shooters semaphore
+/*********************************************************************************//**
+* Input thread function
+*
+* If the shoot button is pushed, post to the shooters semaphore
 *************************************************************************************/
 void * inputFunc( void * arg ){
 
     while ( 1 ){
         // Post the semaphore if button push, debounce for 200 ms
-        if( joystick->GetRawButton( BTN_A ) ){
+        if( joystick->GetRawButton( BTN_X ) ){
             sem_post( shooter_semaphore );
             Wait( .2 );
         }
     }
 }
 
-/*************************************************************************************
-shooterFunc
- - Waits on the semaphore, then fires
+/*********************************************************************************//**
+* Shooter thread function
+*
+* Waits on the shooter's semaphore, then fires
 *************************************************************************************/
 void * shooterFunc( void * arg ){
     int val;                                /* Used for checking semaphore value    */
@@ -133,11 +128,11 @@ void * shooterFunc( void * arg ){
 
         // Start the shooter motor
         shooter_motor->Set( 1.0 );
-        Wait( 1 );
+        Wait( 2.5 );
 
         // Pulse the firing piston
         shooter_piston->Set( shooter_piston->kForward );
-        Wait( .5 );
+        Wait( .75 );
         shooter_piston->Set( shooter_piston->kReverse );
 
         // Only stop the motor if we aren't firing again
