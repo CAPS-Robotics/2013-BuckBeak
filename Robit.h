@@ -26,6 +26,9 @@
 #define TALON_PORT          5               /**< Shooter motor port                 */
 
 #define BTN_X               1               /**< Button X channel on the joystick   */
+#define BTN_LBM             -1
+#define BTN_LTG             -1
+#define BTN_RTG             -1
 
 /*********************************************************************************//**
 * Main robot class
@@ -37,6 +40,15 @@ public:
 
     void RobotInit();                       /**< Robot init function                */
     void AutonomousInit();                  /**< Autonomous init function           */
+    
+    void DisabledInit();
+    void TeleopInit();
+    void TestInit();
+
+    void DisabledPeriodic();
+    void AutonomousPeriodic();
+    void TeleopPeriodic();
+    void TestPeriodic();
 };
 
 /*************************************************************************************
