@@ -47,14 +47,14 @@ myRobit::~myRobit(){}
 /*************************************************************************************
 Unused class functions
 *************************************************************************************/
-void myRobit::DisabledInit(){};
-void myRobit::TeleopInit(){};
-void myRobit::TestInit(){};
+void myRobit::DisabledInit(){}
+void myRobit::TeleopInit(){}
+void myRobit::TestInit(){}
 
-void myRobit::DisabledPeriodic(){};
-void myRobit::AutonomousPeriodic(){};
-void myRobit::TeleopPeriodic(){};
-void myRobit::TestPeriodic(){};
+void myRobit::DisabledPeriodic(){}
+void myRobit::AutonomousPeriodic(){}
+void myRobit::TeleopPeriodic(){}
+void myRobit::TestPeriodic(){}
 
 /*********************************************************************************//**
 * Robot init function

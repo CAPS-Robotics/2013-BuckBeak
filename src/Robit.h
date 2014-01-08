@@ -3,6 +3,9 @@
 * Header file for the myRobit class and its thread functions
 *************************************************************************************/
 
+#ifndef __ROBIT_H_
+#define __ROBIT_H_
+
 /*************************************************************************************
 * Includes
 *************************************************************************************/
@@ -57,3 +60,5 @@ public:
 void * driveFunc( void * );                 /**< Drive thread function              */
 void * inputFunc( void * );                 /**< Input thread function              */
 void * shooterFunc( void * );               /**< Shooter thread function            */
+
+#endif

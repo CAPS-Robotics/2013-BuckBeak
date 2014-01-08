@@ -1,1 +1,8 @@
 Doxygen/*
+*.exe
+*.ilk
+*.pdb
+build-win32/*
+!build-win32/*.vcxproj
+!build-win32/*.filters
+!build-win32/*.sln
