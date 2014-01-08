@@ -132,8 +132,8 @@ void * inputFunc( void * arg ){
 * Waits on the shooter's semaphore, then fires
 *************************************************************************************/
 void * shooterFunc( void * arg ){
-    int val;                                /* Used for checking semaphore value    */
-    int sem_retval;                         /* Used for checking semaphore wait     */
+    int                     val;            /* Used for checking semaphore value    */
+    int                     sem_retval;     /* Used for checking semaphore wait     */
 
     while( 1 ){
         // Try to wait for the semaphore
