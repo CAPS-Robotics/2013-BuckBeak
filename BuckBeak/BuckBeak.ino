@@ -10,7 +10,7 @@ ROPWM frontRightMotor(1);
 ROPWM backLeftMotor(2);
 ROPWM backRightMotor(3);
 ROPWM spinner(4);
-ROPWM spike(0);
+ROPWM spike(5);
 RODigitalIO pressureSwitch(0, INPUT);
 ROSolenoid shooter(0);
 
