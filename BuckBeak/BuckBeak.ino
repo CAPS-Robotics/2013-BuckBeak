@@ -10,8 +10,8 @@ ROPWM frontRightMotor(1);
 ROPWM backLeftMotor(2);
 ROPWM backRightMotor(3);
 ROPWM spinner(4);
-ROPWM spike(5);
 RODigitalIO pressureSwitch(0, INPUT);
+RODigitalIO spike(1, OUTPUT);
 ROSolenoid shooter(0);
 
 void setup()
@@ -46,9 +46,9 @@ void enabled() {
   }
 
   if (pressureSwitch.read()) {
-    spike.write(127);
+    spike.off();
   } else {
-    spike.write(255);
+    spike.on();
   }
 
   // turn on spinner to shoot the frisbee
