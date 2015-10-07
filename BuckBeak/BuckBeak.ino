@@ -13,6 +13,7 @@ ROPWM spinner(4);
 RODigitalIO pressureSwitch(0, INPUT);
 RODigitalIO spike(1, OUTPUT);
 ROSolenoid shooter(0);
+ROTimer shotTimer;
 
 void setup()
 {
@@ -58,6 +59,11 @@ void enabled() {
     // shoot frisbee if motor is spinning
     if (usb.rTrigger()) {
       shooter.on();
+      shotTimer.queue(250);
+      
+      if (shotTimer.ready()) {
+       shooter.off(); 
+      }
     } else {
       shooter.off();
     }
