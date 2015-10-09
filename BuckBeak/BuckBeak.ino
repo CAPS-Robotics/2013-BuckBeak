@@ -19,6 +19,7 @@ void setup()
 {
   /* Initiate comms */
   RobotOpen.begin(&enabled, &disabled, &timedtasks);
+  shotTimer.queue(0);
 }
 
 /* This is your primary robot loop - all of your code
@@ -40,10 +41,10 @@ void enabled() {
   // normalize wheel throttles (Robot Open)
   int maximum = max(max(abs(frontLeft), abs(frontRight)), max(abs(backLeft), abs(backRight)));
   if (maximum > 127) {
-    frontLeft = (frontLeft / maximum) * 127;
-    frontRight = (frontRight / maximum) * 127;
-    backLeft = (backLeft / maximum) * 127;
-    backRight = (backRight / maximum) * 127;
+    frontLeft = frontLeft * 127 / maximum;
+    frontRight = frontRight * 127 / maximum;
+    backLeft = backLeft * 127 / maximum;
+    backRight = backRight * 127 / maximum;
   }
 
   if (pressureSwitch.read()) {
@@ -56,19 +57,19 @@ void enabled() {
   if (usb.btnLShoulder()) {
     spinner.write(255);
 
-    // shoot frisbee if motor is spinning
+    // shoot frisbee if motor is spinning  
     if (usb.rTrigger()) {
       shooter.on();
       shotTimer.queue(250);
-      
-      if (shotTimer.ready()) {
-       shooter.off(); 
-      }
     } else {
       shooter.off();
     }
   } else {
     spinner.write(127);
+  }
+
+  if (shotTimer.ready()) {
+   shooter.off(); 
   }
 
   // Set PWMs, shifted back to [0..255] (Robot Open)
