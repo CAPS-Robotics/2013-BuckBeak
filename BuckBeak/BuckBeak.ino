@@ -26,27 +26,7 @@ void setup()
  * should live here that allows the robot to operate
  */
 void enabled() {
-  // I totally just copied all of the mecanum drive code from Robot Open
-  // get desired translation and rotation, scaled to [-127..128] (0 neutral)
-  int x = usb.leftX() - 127;
-  int y = (255 - usb.leftY()) - 127;
-  int rotate = usb.rightX() - 127;
-
-  // calculate wheel throttles (Robot Open)
-  int frontLeft = x + y + rotate;
-  int frontRight = x - y + rotate;
-  int backLeft = -x + y + rotate;
-  int backRight = -x - y + rotate;
-
-  // normalize wheel throttles (Robot Open)
-  int maximum = max(max(abs(frontLeft), abs(frontRight)), max(abs(backLeft), abs(backRight)));
-  if (maximum > 127) {
-    frontLeft = frontLeft * 127 / maximum;
-    frontRight = frontRight * 127 / maximum;
-    backLeft = backLeft * 127 / maximum;
-    backRight = backRight * 127 / maximum;
-  }
-
+  
   if (pressureSwitch.read()) {
     spike.off();
   } else {
@@ -72,6 +52,27 @@ void enabled() {
    shooter.off(); 
   }
 
+	// I totally just copied all of the mecanum drive code from Robot Open
+  // get desired translation and rotation, scaled to [-127..128] (0 neutral)
+  int x = usb.leftX() - 127;
+  int y = (255 - usb.leftY()) - 127;
+  int rotate = usb.rightX() - 127;
+
+  // calculate wheel throttles (Robot Open)
+  int frontLeft = x + y + rotate;
+  int frontRight = x - y + rotate;
+  int backLeft = -x + y + rotate;
+  int backRight = -x - y + rotate;
+
+  // normalize wheel throttles (Robot Open)
+  int maximum = max(max(abs(frontLeft), abs(frontRight)), max(abs(backLeft), abs(backRight)));
+  if (maximum > 127) {
+    frontLeft = frontLeft * 127 / maximum;
+    frontRight = frontRight * 127 / maximum;
+    backLeft = backLeft * 127 / maximum;
+    backRight = backRight * 127 / maximum;
+  }
+
   // Set PWMs, shifted back to [0..255] (Robot Open)
   frontLeftMotor.write(frontLeft + 127);
   frontRightMotor.write(frontRight + 127);
@@ -91,6 +92,12 @@ void disabled() {
  */
 void timedtasks() {
   RODashboard.publish("Uptime Seconds", ROStatus.uptimeSeconds());
+
+  if (pressureSwitch.read()) {
+    spike.off();
+  } else {
+    spike.on();
+  }
 }
 
 // !!! DO NOT MODIFY !!!
