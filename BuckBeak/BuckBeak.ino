@@ -12,7 +12,8 @@ ROPWM backRightMotor(3);
 ROPWM spinner(4);
 RODigitalIO pressureSwitch(0, INPUT);
 RODigitalIO spike(1, OUTPUT);
-ROSolenoid shooter(0);
+ROSolenoid shooter_back(0);
+ROSolenoid shooter_front(1);
 ROTimer shotTimer;
 
 void setup()
@@ -39,17 +40,20 @@ void enabled() {
 
     // shoot frisbee if motor is spinning  
     if (usb.rTrigger()) {
-      shooter.on();
+      shooter_back.off();
+      shooter_front.on();
       shotTimer.queue(250);
     } else {
-      shooter.off();
+      shooter_back.on();
+      shooter_front.off();
     }
   } else {
     spinner.write(127);
   }
 
   if (shotTimer.ready()) {
-   shooter.off(); 
+      shooter_back.on();
+      shooter_front.off(); 
   }
 
 	// I totally just copied all of the mecanum drive code from Robot Open
